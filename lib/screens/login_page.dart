@@ -1,8 +1,47 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'register_page.dart';
 
-class LoginPage extends StatelessWidget {
+class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
+
+  @override
+  State<LoginPage> createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+
+  @override
+  void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _login() async {
+    try {
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: emailController.text.trim(),
+        password: passwordController.text.trim(),
+      );
+
+      if (!mounted) return; //Verifica si el widget sigue activo
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Inicio de sesión exitoso')),
+      );
+
+      // Aquí podrías navegar a la pantalla principal
+      // Navigator.pushReplacement(...);
+    } on FirebaseAuthException catch (e) {
+      if (!mounted) return; //Verifica si el widget sigue activo
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: ${e.message}')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,6 +63,7 @@ class LoginPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 30),
                   TextField(
+                    controller: emailController,
                     decoration: const InputDecoration(
                       labelText: 'Correo electrónico',
                       border: OutlineInputBorder(),
@@ -31,6 +71,7 @@ class LoginPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 20),
                   TextField(
+                    controller: passwordController,
                     obscureText: true,
                     decoration: const InputDecoration(
                       labelText: 'Contraseña',
@@ -39,9 +80,7 @@ class LoginPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 30),
                   ElevatedButton(
-                    onPressed: () {
-                      // Firebase auth login aquí
-                    },
+                    onPressed: _login,
                     child: const Text('Ingresar'),
                   ),
                 ],
@@ -57,9 +96,13 @@ class LoginPage extends StatelessWidget {
                         Navigator.push(
                           context,
                           PageRouteBuilder(
-                            pageBuilder: (_, animation, __) => const RegisterPage(),
+                            pageBuilder: (_, animation, __) =>
+                                const RegisterPage(),
                             transitionsBuilder: (_, animation, __, child) =>
-                                FadeTransition(opacity: animation, child: child),
+                                FadeTransition(
+                              opacity: animation,
+                              child: child,
+                            ),
                           ),
                         );
                       },

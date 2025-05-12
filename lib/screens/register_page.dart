@@ -1,8 +1,67 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'login_page.dart';
 
-class RegisterPage extends StatelessWidget {
+class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
+
+  @override
+  State<RegisterPage> createState() => _RegisterPageState();
+}
+
+class _RegisterPageState extends State<RegisterPage> {
+  final TextEditingController usernameController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  final TextEditingController confirmPasswordController =
+      TextEditingController();
+
+  @override
+  void dispose() {
+    usernameController.dispose();
+    emailController.dispose();
+    passwordController.dispose();
+    confirmPasswordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _register() async {
+    if (passwordController.text.trim() !=
+        confirmPasswordController.text.trim()) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Las contraseñas no coinciden')),
+      );
+      return;
+    }
+
+    try {
+      await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: emailController.text.trim(),
+        password: passwordController.text.trim(),
+      );
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Registro exitoso')),
+      );
+
+      Navigator.pushReplacement(
+        context,
+        PageRouteBuilder(
+          pageBuilder: (_, animation, __) => const LoginPage(),
+          transitionsBuilder: (_, animation, __, child) =>
+              FadeTransition(opacity: animation, child: child),
+        ),
+      );
+    } on FirebaseAuthException catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: ${e.message}')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +75,8 @@ class RegisterPage extends StatelessWidget {
               Column(
                 children: [
                   const SizedBox(height: 40),
-                  const Icon(Icons.person_add, size: 80, color: Colors.deepPurple),
+                  const Icon(Icons.person_add,
+                      size: 80, color: Colors.deepPurple),
                   const SizedBox(height: 20),
                   const Text(
                     'Registro',
@@ -24,6 +84,7 @@ class RegisterPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 30),
                   TextField(
+                    controller: usernameController,
                     decoration: const InputDecoration(
                       labelText: 'Nombre de usuario',
                       border: OutlineInputBorder(),
@@ -31,6 +92,7 @@ class RegisterPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 20),
                   TextField(
+                    controller: emailController,
                     decoration: const InputDecoration(
                       labelText: 'Correo electrónico',
                       border: OutlineInputBorder(),
@@ -38,6 +100,7 @@ class RegisterPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 20),
                   TextField(
+                    controller: passwordController,
                     obscureText: true,
                     decoration: const InputDecoration(
                       labelText: 'Contraseña',
@@ -46,6 +109,7 @@ class RegisterPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 20),
                   TextField(
+                    controller: confirmPasswordController,
                     obscureText: true,
                     decoration: const InputDecoration(
                       labelText: 'Confirmar contraseña',
@@ -54,9 +118,7 @@ class RegisterPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 30),
                   ElevatedButton(
-                    onPressed: () {
-                      // Firebase auth registro aquí
-                    },
+                    onPressed: _register,
                     child: const Text('Registrarse'),
                   ),
                 ],
@@ -72,9 +134,11 @@ class RegisterPage extends StatelessWidget {
                         Navigator.pushReplacement(
                           context,
                           PageRouteBuilder(
-                            pageBuilder: (_, animation, __) => const LoginPage(),
+                            pageBuilder: (_, animation, __) =>
+                                const LoginPage(),
                             transitionsBuilder: (_, animation, __, child) =>
-                                FadeTransition(opacity: animation, child: child),
+                                FadeTransition(
+                                    opacity: animation, child: child),
                           ),
                         );
                       },
