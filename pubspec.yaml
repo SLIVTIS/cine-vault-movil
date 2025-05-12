@@ -41,3 +41,5 @@ flutter:
   uses-material-design: true
   assets:
     - assets/images/splash_background.png
+    - assets/images/movie_placeholder.png
+    - assets/images/spiderman.png
