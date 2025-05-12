@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "303703149415",
+    "project_id": "cine-vault-movil",
+    "storage_bucket": "cine-vault-movil.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:303703149415:android:7c440d8c98df1f00097dc2",
+        "android_client_info": {
+          "package_name": "com.example.cine_vault"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBcXGdbAvRkOpEhRQZHz0_rzWoE-_dYEwI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
