@@ -2,7 +2,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 class HomeContent extends StatelessWidget {
-  const HomeContent({super.key});
+  final VoidCallback? onSearchTap;
+
+  const HomeContent({super.key, this.onSearchTap});
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +40,7 @@ class HomeContent extends StatelessWidget {
                       ),
                     ),
                     IconButton(
-                      onPressed: () {},
+                      onPressed: onSearchTap,
                       icon: const Icon(Icons.search, color: Colors.white),
                     ),
                   ],

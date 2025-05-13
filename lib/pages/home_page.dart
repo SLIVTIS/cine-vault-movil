@@ -13,15 +13,21 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   int currentIndex = 0;
 
-  final List<Widget> _pages = const [
-    HomeContent(),
-    CatalogPage(),
-    MovieManagerPage(),
-    Center(child: Text('Perfil', style: TextStyle(color: Colors.white))),
-  ];
+  void goToExplore() {
+    setState(() {
+      currentIndex = 1; // índice de "Explorar"
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+    final List<Widget> _pages = [
+      HomeContent(onSearchTap: goToExplore),
+      const CatalogPage(),
+      const MovieManagerPage(),
+      const Center(child: Text('Perfil', style: TextStyle(color: Colors.white))),
+    ];
+
     return Scaffold(
       backgroundColor: Colors.black,
       body: _pages[currentIndex],
