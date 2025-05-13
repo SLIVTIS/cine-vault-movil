@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'movie_detail_page.dart';
 
 class HomeContent extends StatelessWidget {
   final VoidCallback? onSearchTap;
@@ -49,7 +50,20 @@ class HomeContent extends StatelessWidget {
               const SizedBox(height: 20),
 
               // Featured Movie
-              if (movies.isNotEmpty) _buildFeaturedMovie(movies.first),
+              if (movies.isNotEmpty)
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => MovieDetailPage(
+                          movie: movies.first.data() as Map<String, dynamic>,
+                        ),
+                      ),
+                    );
+                  },
+                  child: _buildFeaturedMovie(movies.first),
+                ),
 
               const SizedBox(height: 30),
 
@@ -68,22 +82,32 @@ class HomeContent extends StatelessWidget {
                   itemCount: movies.length,
                   itemBuilder: (context, index) {
                     final data = movies[index].data() as Map<String, dynamic>;
-                    return Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 8),
-                      width: 80,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10),
-                        color: Colors.grey.shade800,
-                        image: data['imageUrl'] != null
-                            ? DecorationImage(
-                                image: NetworkImage(data['imageUrl']),
-                                fit: BoxFit.cover,
-                              )
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => MovieDetailPage(movie: data),
+                          ),
+                        );
+                      },
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 8),
+                        width: 80,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
+                          color: Colors.grey.shade800,
+                          image: data['imageUrl'] != null
+                              ? DecorationImage(
+                                  image: NetworkImage(data['imageUrl']),
+                                  fit: BoxFit.cover,
+                                )
+                              : null,
+                        ),
+                        child: data['imageUrl'] == null
+                            ? const Icon(Icons.movie, color: Colors.white70)
                             : null,
                       ),
-                      child: data['imageUrl'] == null
-                          ? const Icon(Icons.movie, color: Colors.white70)
-                          : null,
                     );
                   },
                 ),

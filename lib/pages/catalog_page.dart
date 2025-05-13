@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'movie_detail_page.dart';
 
 class CatalogPage extends StatefulWidget {
   const CatalogPage({super.key});
@@ -29,7 +30,6 @@ class _CatalogPageState extends State<CatalogPage> {
           .orderBy('createdAt', descending: true)
           .snapshots();
     } else {
-      // Solo búsqueda por título (campo indexado en Firestore)
       return FirebaseFirestore.instance
           .collection('movies')
           .where('title_lowercase', isGreaterThanOrEqualTo: _searchTerm)
@@ -112,57 +112,67 @@ class _CatalogPageState extends State<CatalogPage> {
                       final imageUrl = movie['imageUrl'] as String?;
                       final title = movie['title'] ?? 'Sin título';
 
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Stack(
-                            children: [
-                              Container(
-                                height: 150,
-                                width: double.infinity,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(8),
-                                  image: imageUrl != null
-                                      ? DecorationImage(
-                                          image: NetworkImage(imageUrl),
-                                          fit: BoxFit.cover,
+                      return GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => MovieDetailPage(movie: movie),
+                            ),
+                          );
+                        },
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Stack(
+                              children: [
+                                Container(
+                                  height: 150,
+                                  width: double.infinity,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(8),
+                                    image: imageUrl != null
+                                        ? DecorationImage(
+                                            image: NetworkImage(imageUrl),
+                                            fit: BoxFit.cover,
+                                          )
+                                        : null,
+                                    color: Colors.grey.shade800,
+                                  ),
+                                  child: imageUrl == null
+                                      ? const Center(
+                                          child: Icon(Icons.movie,
+                                              color: Colors.white54),
                                         )
                                       : null,
-                                  color: Colors.grey.shade800,
                                 ),
-                                child: imageUrl == null
-                                    ? const Center(
-                                        child: Icon(Icons.movie,
-                                            color: Colors.white54),
-                                      )
-                                    : null,
-                              ),
-                              Positioned.fill(
-                                child: Align(
-                                  alignment: Alignment.center,
-                                  child: Container(
-                                    decoration: const BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: Colors.black54,
+                                Positioned.fill(
+                                  child: Align(
+                                    alignment: Alignment.center,
+                                    child: Container(
+                                      decoration: const BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: Colors.black54,
+                                      ),
+                                      padding: const EdgeInsets.all(6),
+                                      child: const Icon(Icons.play_arrow,
+                                          color: Colors.white),
                                     ),
-                                    padding: const EdgeInsets.all(6),
-                                    child: const Icon(Icons.play_arrow,
-                                        color: Colors.white),
                                   ),
                                 ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            title,
-                            style: const TextStyle(
-                                color: Colors.white70, fontSize: 14),
-                            textAlign: TextAlign.center,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              title,
+                              style: const TextStyle(
+                                  color: Colors.white70, fontSize: 14),
+                              textAlign: TextAlign.center,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
                       );
                     },
                   );
