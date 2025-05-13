@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'register_page.dart';
+import 'home_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -29,12 +30,12 @@ class _LoginPageState extends State<LoginPage> {
 
       if (!mounted) return; //Verifica si el widget sigue activo
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Inicio de sesión exitoso')),
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (_) => const HomePage()),
+        (route) => false,
       );
 
-      // Aquí podrías navegar a la pantalla principal
-      // Navigator.pushReplacement(...);
     } on FirebaseAuthException catch (e) {
       if (!mounted) return; //Verifica si el widget sigue activo
       ScaffoldMessenger.of(context).showSnackBar(
