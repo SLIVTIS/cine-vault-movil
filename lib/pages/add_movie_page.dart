@@ -1,7 +1,14 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class AddMoviePage extends StatefulWidget {
-  const AddMoviePage({super.key});
+  final String? movieId;
+  final Map<String, dynamic>? initialData;
+
+  const AddMoviePage({super.key, this.movieId, this.initialData});
 
   @override
   State<AddMoviePage> createState() => _AddMoviePageState();
@@ -14,87 +21,107 @@ class _AddMoviePageState extends State<AddMoviePage> {
   final TextEditingController synopsisController = TextEditingController();
   final TextEditingController yearController = TextEditingController();
   final TextEditingController directorController = TextEditingController();
-  final TextEditingController categoryController = TextEditingController();
+  final TextEditingController genreController = TextEditingController();
   final TextEditingController ratingController = TextEditingController();
 
-  // Simulación de imagen cargada
-  String? _imagePath;
+  File? _imageFile;
+  String? _imageUrl;
+  bool _isLoading = false;
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black,
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        title: const Text('Subir Película', style: TextStyle(color: Colors.white)),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              buildTextField('Nombre', titleController),
-              buildTextField('Sinopsis', synopsisController, maxLines: 3),
-              buildTextField('Año', yearController, keyboardType: TextInputType.number),
-              buildTextField('Director', directorController),
-              buildTextField('Categoría', categoryController),
-              buildTextField('Calificación (0.0 - 10.0)', ratingController, keyboardType: TextInputType.number),
-              const SizedBox(height: 16),
-              GestureDetector(
-                onTap: () {
-                  // Simulación de subir imagen (luego se puede usar image_picker o Firebase)
-                  setState(() {
-                    _imagePath = 'assets/images/movie_placeholder.png';
-                  });
-                },
-                child: Container(
-                  height: 180,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade900,
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: Colors.white24),
-                  ),
-                  child: _imagePath != null
-                      ? ClipRRect(
-                          borderRadius: BorderRadius.circular(10),
-                          child: Image.asset(
-                            _imagePath!,
-                            fit: BoxFit.cover,
-                          ),
-                        )
-                      : const Center(
-                          child: Text(
-                            'Toca para subir imagen',
-                            style: TextStyle(color: Colors.white54),
-                          ),
-                        ),
-                ),
-              ),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.deepPurple,
-                ),
-                onPressed: () {
-                  if (_formKey.currentState!.validate()) {
-                    // Aquí puedes guardar la película o mandarla a Firebase
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Película subida')),
-                    );
-                  }
-                },
-                child: const Text('Guardar Película'),
-              )
-            ],
-          ),
-        ),
-      ),
-    );
+  void initState() {
+    super.initState();
+    if (widget.initialData != null) {
+      final data = widget.initialData!;
+      titleController.text = data['title'] ?? '';
+      synopsisController.text = data['synopsis'] ?? '';
+      yearController.text = data['year']?.toString() ?? '';
+      directorController.text = data['director'] ?? '';
+      genreController.text = data['genre'] ?? '';
+      ratingController.text = data['rating']?.toString() ?? '';
+      _imageUrl = data['imageUrl'];
+    }
   }
 
-  Widget buildTextField(String label, TextEditingController controller,
+  Future<void> _pickImage() async {
+    final picker = ImagePicker();
+    final pickedImage =
+        await picker.pickImage(source: ImageSource.gallery, imageQuality: 85);
+    if (pickedImage != null) {
+      setState(() {
+        _imageFile = File(pickedImage.path);
+      });
+    }
+  }
+
+  Future<void> _uploadMovie() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => _isLoading = true);
+
+    try {
+      String? imageUrl = _imageUrl;
+
+      if (_imageFile != null) {
+        final fileName = DateTime.now().millisecondsSinceEpoch.toString();
+        final storageRef =
+            FirebaseStorage.instance.ref().child('movies/$fileName.jpg');
+        final uploadTask = await storageRef.putFile(_imageFile!);
+        imageUrl = await uploadTask.ref.getDownloadURL();
+      }
+
+      final data = {
+        'title': titleController.text.trim(),
+        'synopsis': synopsisController.text.trim(),
+        'year': int.parse(yearController.text.trim()),
+        'director': directorController.text.trim(),
+        'genre': genreController.text.trim(),
+        'rating': double.parse(ratingController.text.trim()),
+        'imageUrl': imageUrl,
+        'updatedAt': FieldValue.serverTimestamp(),
+      };
+
+      if (widget.movieId != null) {
+        await FirebaseFirestore.instance
+            .collection('movies')
+            .doc(widget.movieId)
+            .update(data);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Película actualizada correctamente')),
+        );
+      } else {
+        data['createdAt'] = FieldValue.serverTimestamp();
+        await FirebaseFirestore.instance.collection('movies').add(data);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Película subida exitosamente')),
+        );
+      }
+
+      if (widget.movieId == null) {
+        _formKey.currentState!.reset();
+        titleController.clear();
+        synopsisController.clear();
+        yearController.clear();
+        directorController.clear();
+        genreController.clear();
+        ratingController.clear();
+        setState(() {
+          _imageFile = null;
+          _imageUrl = null;
+        });
+      } else {
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  Widget _buildTextField(String label, TextEditingController controller,
       {int maxLines = 1, TextInputType keyboardType = TextInputType.text}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
@@ -116,6 +143,86 @@ class _AddMoviePageState extends State<AddMoviePage> {
           }
           return null;
         },
+      ),
+    );
+  }
+
+  Widget _buildImagePreview() {
+    Widget content;
+
+    if (_imageFile != null) {
+      content = Image.file(_imageFile!, fit: BoxFit.cover);
+    } else if (_imageUrl != null) {
+      content = Image.network(_imageUrl!, fit: BoxFit.cover);
+    } else {
+      content = const Center(
+        child: Text(
+          'Toca para seleccionar una imagen',
+          style: TextStyle(color: Colors.white54),
+        ),
+      );
+    }
+
+    return GestureDetector(
+      onTap: _pickImage,
+      child: Container(
+        height: 180,
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: Colors.grey.shade900,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: Colors.white24),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(10),
+          child: content,
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isEditing = widget.movieId != null;
+
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.black,
+        title: Text(
+          isEditing ? 'Editar Película' : 'Subir Película',
+          style: const TextStyle(color: Colors.white),
+        ),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              _buildTextField('Nombre', titleController),
+              _buildTextField('Sinopsis', synopsisController, maxLines: 3),
+              _buildTextField('Año', yearController,
+                  keyboardType: TextInputType.number),
+              _buildTextField('Director', directorController),
+              _buildTextField('Género', genreController),
+              _buildTextField('Calificación (0.0 - 10.0)', ratingController,
+                  keyboardType: TextInputType.number),
+              const SizedBox(height: 16),
+              _buildImagePreview(),
+              const SizedBox(height: 24),
+              _isLoading
+                  ? const CircularProgressIndicator()
+                  : ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.deepPurple,
+                      ),
+                      onPressed: _uploadMovie,
+                      child: Text(isEditing ? 'Guardar cambios' : 'Guardar película'),
+                    ),
+            ],
+          ),
+        ),
       ),
     );
   }

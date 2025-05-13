@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'add_movie_page.dart';
+import 'movie_manager_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -14,7 +14,7 @@ class _HomePageState extends State<HomePage> {
   final List<Widget> _pages = const [
     Center(child: Text('Home', style: TextStyle(color: Colors.white))),
     Center(child: Text('Explorar', style: TextStyle(color: Colors.white))),
-    AddMoviePage(),
+    MovieManagerPage(),
     Center(child: Text('Perfil', style: TextStyle(color: Colors.white))),
   ];
 
@@ -37,7 +37,7 @@ class _HomePageState extends State<HomePage> {
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.explore), label: 'Explorar'),
-          BottomNavigationBarItem(icon: Icon(Icons.upload), label: 'Subir'),
+          BottomNavigationBarItem(icon: Icon(Icons.movie_filter), label: 'Administrar'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Perfil'),
         ],
       ),
