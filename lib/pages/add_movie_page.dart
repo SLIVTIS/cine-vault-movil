@@ -72,6 +72,7 @@ class _AddMoviePageState extends State<AddMoviePage> {
 
       final data = {
         'title': titleController.text.trim(),
+        'title_lowercase': titleController.text.trim().toLowerCase(),
         'synopsis': synopsisController.text.trim(),
         'year': int.parse(yearController.text.trim()),
         'director': directorController.text.trim(),

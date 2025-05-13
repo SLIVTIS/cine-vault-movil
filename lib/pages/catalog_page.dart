@@ -1,8 +1,43 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
-class CatalogPage extends StatelessWidget {
+class CatalogPage extends StatefulWidget {
   const CatalogPage({super.key});
+
+  @override
+  State<CatalogPage> createState() => _CatalogPageState();
+}
+
+class _CatalogPageState extends State<CatalogPage> {
+  final TextEditingController _searchController = TextEditingController();
+  String _searchTerm = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController.addListener(() {
+      setState(() {
+        _searchTerm = _searchController.text.trim().toLowerCase();
+      });
+    });
+  }
+
+  Stream<QuerySnapshot> getMovieStream() {
+    if (_searchTerm.isEmpty) {
+      return FirebaseFirestore.instance
+          .collection('movies')
+          .orderBy('createdAt', descending: true)
+          .snapshots();
+    } else {
+      // Solo búsqueda por título (campo indexado en Firestore)
+      return FirebaseFirestore.instance
+          .collection('movies')
+          .where('title_lowercase', isGreaterThanOrEqualTo: _searchTerm)
+          .where('title_lowercase', isLessThanOrEqualTo: '$_searchTerm\uf8ff')
+          .orderBy('title_lowercase')
+          .snapshots();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -10,28 +45,26 @@ class CatalogPage extends StatelessWidget {
       backgroundColor: Colors.black,
       appBar: AppBar(
         backgroundColor: Colors.black,
-        title: const Text(
-          'Catálogo',
-          style: TextStyle(color: Colors.white),
-        ),
+        title: const Text('Catálogo', style: TextStyle(color: Colors.white)),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Search bar
+            // Barra de búsqueda
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               decoration: BoxDecoration(
                 color: Colors.grey.shade900,
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: const TextField(
-                style: TextStyle(color: Colors.white),
-                decoration: InputDecoration(
+              child: TextField(
+                controller: _searchController,
+                style: const TextStyle(color: Colors.white),
+                decoration: const InputDecoration(
                   icon: Icon(Icons.search, color: Colors.white),
-                  hintText: 'Buscar títulos, géneros o directores',
+                  hintText: 'Buscar por título',
                   hintStyle: TextStyle(color: Colors.white54),
                   border: InputBorder.none,
                 ),
@@ -44,13 +77,10 @@ class CatalogPage extends StatelessWidget {
             ),
             const SizedBox(height: 16),
 
-            // Películas desde Firestore
+            // Resultados
             Expanded(
               child: StreamBuilder<QuerySnapshot>(
-                stream: FirebaseFirestore.instance
-                    .collection('movies')
-                    .orderBy('createdAt', descending: true)
-                    .snapshots(),
+                stream: getMovieStream(),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(child: CircularProgressIndicator());
@@ -61,7 +91,7 @@ class CatalogPage extends StatelessWidget {
                   if (movies.isEmpty) {
                     return const Center(
                       child: Text(
-                        'No hay películas disponibles.',
+                        'No se encontraron películas.',
                         style: TextStyle(color: Colors.white70),
                       ),
                     );
