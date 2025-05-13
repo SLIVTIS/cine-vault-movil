@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'movie_manager_page.dart';
 import 'home_content.dart';
 import 'catalog_page.dart';
+import 'profile_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -25,7 +26,7 @@ class _HomePageState extends State<HomePage> {
       HomeContent(onSearchTap: goToExplore),
       const CatalogPage(),
       const MovieManagerPage(),
-      const Center(child: Text('Perfil', style: TextStyle(color: Colors.white))),
+      const ProfilePage(),
     ];
 
     return Scaffold(
