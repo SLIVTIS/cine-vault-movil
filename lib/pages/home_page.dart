@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'movie_manager_page.dart';
+import 'home_content.dart';
+import 'catalog_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -12,8 +14,8 @@ class _HomePageState extends State<HomePage> {
   int currentIndex = 0;
 
   final List<Widget> _pages = const [
-    Center(child: Text('Home', style: TextStyle(color: Colors.white))),
-    Center(child: Text('Explorar', style: TextStyle(color: Colors.white))),
+    HomeContent(),
+    CatalogPage(),
     MovieManagerPage(),
     Center(child: Text('Perfil', style: TextStyle(color: Colors.white))),
   ];
