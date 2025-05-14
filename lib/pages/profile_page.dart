@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'login_page.dart';
-import 'package:image_picker/image_picker.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -57,12 +56,6 @@ class _ProfilePageState extends State<ProfilePage> {
     final email = user?.email ?? 'Sin correo';
 
     return Scaffold(
-      backgroundColor: Colors.black,
-      appBar: AppBar(
-        title: const Text('Editar perfil', style: TextStyle(color: Colors.white)),
-        backgroundColor: Colors.black,
-        elevation: 0,
-      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Column(
@@ -83,7 +76,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     },
                     child: const Text(
                       'Editar imagen',
-                      style: TextStyle(color: Colors.deepPurple),
+                      style: TextStyle(color: Colors.red),
                     ),
                   ),
                 ],
@@ -141,7 +134,10 @@ class _ProfilePageState extends State<ProfilePage> {
                     );
                   }
                 },
-                icon: const Icon(Icons.logout),
+                icon: const Icon(
+                  Icons.logout,
+                  color: Colors.white, // ← Aquí cambias el color
+                ),
                 label: const Text('Cerrar sesión'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.red,
@@ -186,8 +182,7 @@ class _ProfilePageState extends State<ProfilePage> {
       decoration: InputDecoration(
         hintText: hint,
         hintStyle: const TextStyle(color: Colors.white54),
-        filled: true,
-        fillColor: Colors.grey.shade900,
+        filled: false,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
       ),
     );

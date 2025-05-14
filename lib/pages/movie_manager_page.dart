@@ -8,10 +8,9 @@ class MovieManagerPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
       appBar: AppBar(
         title: const Text('Administrar Películas'),
-        backgroundColor: Colors.black,
+        backgroundColor: Color.fromARGB(255, 15, 12, 15),
         actions: [
           IconButton(
             onPressed: () {

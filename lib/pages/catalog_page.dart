@@ -42,13 +42,13 @@ class _CatalogPageState extends State<CatalogPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        title: const Text('Catálogo', style: TextStyle(color: Colors.white)),
-      ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.only(
+          top: 80.0, // Padding adicional arriba
+          left: 16.0,
+          right: 16.0,
+          bottom: 16.0,
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -67,6 +67,8 @@ class _CatalogPageState extends State<CatalogPage> {
                   hintText: 'Buscar por título',
                   hintStyle: TextStyle(color: Colors.white54),
                   border: InputBorder.none,
+                  enabledBorder: InputBorder.none,
+                  focusedBorder: InputBorder.none,
                 ),
               ),
             ),

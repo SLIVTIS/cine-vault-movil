@@ -30,10 +30,9 @@ class _HomePageState extends State<HomePage> {
     ];
 
     return Scaffold(
-      backgroundColor: Colors.black,
       body: _pages[currentIndex],
       bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: Colors.black,
+        backgroundColor: Color.fromARGB(255, 15, 12, 15),
         selectedItemColor: Colors.white,
         unselectedItemColor: Colors.white54,
         currentIndex: currentIndex,

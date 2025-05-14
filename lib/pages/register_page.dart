@@ -76,7 +76,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 children: [
                   const SizedBox(height: 40),
                   const Icon(Icons.person_add,
-                      size: 80, color: Colors.deepPurple),
+                      size: 80),
                   const SizedBox(height: 20),
                   const Text(
                     'Registro',
@@ -145,9 +145,8 @@ class _RegisterPageState extends State<RegisterPage> {
                       child: const Text(
                         'Inicia sesión',
                         style: TextStyle(
-                          color: Colors.deepPurple,
+                          color: Colors.red,
                           fontWeight: FontWeight.bold,
-                          decoration: TextDecoration.underline,
                         ),
                       ),
                     )

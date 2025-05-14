@@ -1,8 +1,9 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class AddMoviePage extends StatefulWidget {
   final String? movieId;
@@ -54,6 +55,29 @@ class _AddMoviePageState extends State<AddMoviePage> {
     }
   }
 
+  Future<String?> uploadImage(File imageFile) async {
+    final uri = Uri.parse('https://gallery.espectralcode.com/upload');
+
+    final request = http.MultipartRequest('POST', uri)
+      ..files.add(await http.MultipartFile.fromPath('image', imageFile.path));
+
+    try {
+      final streamedResponse = await request.send();
+
+      if (streamedResponse.statusCode == 201) {
+        final resString = await streamedResponse.stream.bytesToString();
+        final jsonRes = jsonDecode(resString);
+        return jsonRes['url'];
+      } else {
+        print('Error al subir: ${streamedResponse.statusCode}');
+        return null;
+      }
+    } catch (e) {
+      print('Excepción al subir imagen: $e');
+      return null;
+    }
+  }
+
   Future<void> _uploadMovie() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -63,11 +87,14 @@ class _AddMoviePageState extends State<AddMoviePage> {
       String? imageUrl = _imageUrl;
 
       if (_imageFile != null) {
-        final fileName = DateTime.now().millisecondsSinceEpoch.toString();
-        final storageRef =
-            FirebaseStorage.instance.ref().child('movies/$fileName.jpg');
-        final uploadTask = await storageRef.putFile(_imageFile!);
-        imageUrl = await uploadTask.ref.getDownloadURL();
+        imageUrl = await uploadImage(_imageFile!);
+        if (imageUrl == null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Error al subir la imagen')),
+          );
+          setState(() => _isLoading = false);
+          return;
+        }
       }
 
       final data = {
@@ -134,8 +161,7 @@ class _AddMoviePageState extends State<AddMoviePage> {
         decoration: InputDecoration(
           labelText: label,
           labelStyle: const TextStyle(color: Colors.white70),
-          filled: true,
-          fillColor: Colors.grey.shade900,
+          filled: false,
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
         ),
         validator: (value) {
@@ -186,45 +212,50 @@ class _AddMoviePageState extends State<AddMoviePage> {
   Widget build(BuildContext context) {
     final isEditing = widget.movieId != null;
 
-    return Scaffold(
-      backgroundColor: Colors.black,
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        title: Text(
-          isEditing ? 'Editar Película' : 'Subir Película',
-          style: const TextStyle(color: Colors.white),
-        ),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              _buildTextField('Nombre', titleController),
-              _buildTextField('Sinopsis', synopsisController, maxLines: 3),
-              _buildTextField('Año', yearController,
-                  keyboardType: TextInputType.number),
-              _buildTextField('Director', directorController),
-              _buildTextField('Género', genreController),
-              _buildTextField('Calificación (0.0 - 10.0)', ratingController,
-                  keyboardType: TextInputType.number),
-              const SizedBox(height: 16),
-              _buildImagePreview(),
-              const SizedBox(height: 24),
-              _isLoading
-                  ? const CircularProgressIndicator()
-                  : ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.deepPurple,
-                      ),
-                      onPressed: _uploadMovie,
-                      child: Text(isEditing ? 'Guardar cambios' : 'Guardar película'),
-                    ),
-            ],
+    return Stack(
+      children: [
+        Scaffold(
+          appBar: AppBar(
+            backgroundColor: Color.fromARGB(255, 15, 12, 15),
+            title: Text(
+              isEditing ? 'Editar Película' : 'Subir Película',
+              style: const TextStyle(color: Colors.white),
+            ),
+          ),
+          body: SingleChildScrollView(
+            padding: const EdgeInsets.all(20),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                children: [
+                  _buildTextField('Nombre', titleController),
+                  _buildTextField('Sinopsis', synopsisController, maxLines: 3),
+                  _buildTextField('Año', yearController,
+                      keyboardType: TextInputType.number),
+                  _buildTextField('Director', directorController),
+                  _buildTextField('Género', genreController),
+                  _buildTextField('Calificación (0.0 - 10.0)', ratingController,
+                      keyboardType: TextInputType.number),
+                  const SizedBox(height: 16),
+                  _buildImagePreview(),
+                  const SizedBox(height: 24),
+                  ElevatedButton(
+                    onPressed: _isLoading ? null : _uploadMovie,
+                    child: Text(isEditing ? 'Guardar cambios' : 'Guardar película'),
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
-      ),
+        if (_isLoading)
+          Container(
+            color: Colors.black.withOpacity(0.7),
+            child: const Center(
+              child: CircularProgressIndicator(color: Colors.red),
+            ),
+          ),
+      ],
     );
   }
 }

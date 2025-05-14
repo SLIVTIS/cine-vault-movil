@@ -13,6 +13,7 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+  bool _obscurePassword = true; // ← Nuevo estado
 
   @override
   void dispose() {
@@ -28,16 +29,15 @@ class _LoginPageState extends State<LoginPage> {
         password: passwordController.text.trim(),
       );
 
-      if (!mounted) return; //Verifica si el widget sigue activo
+      if (!mounted) return;
 
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (_) => const HomePage()),
         (route) => false,
       );
-
     } on FirebaseAuthException catch (e) {
-      if (!mounted) return; //Verifica si el widget sigue activo
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error: ${e.message}')),
       );
@@ -56,30 +56,50 @@ class _LoginPageState extends State<LoginPage> {
               Column(
                 children: [
                   const SizedBox(height: 40),
-                  const Icon(Icons.lock, size: 80, color: Colors.deepPurple),
+                  const Icon(Icons.lock, size: 80),
                   const SizedBox(height: 20),
                   const Text(
                     'Iniciar sesión',
                     style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 30),
+
+                  // Campo de correo con ícono
                   TextField(
                     controller: emailController,
                     decoration: const InputDecoration(
                       labelText: 'Correo electrónico',
                       border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.email), // ← Ícono añadido
                     ),
                   ),
                   const SizedBox(height: 20),
+
+                  // Campo de contraseña con ícono del ojo
                   TextField(
                     controller: passwordController,
-                    obscureText: true,
-                    decoration: const InputDecoration(
+                    obscureText: _obscurePassword,
+                    decoration: InputDecoration(
                       labelText: 'Contraseña',
-                      border: OutlineInputBorder(),
+                      border: const OutlineInputBorder(),
+                      prefixIcon: IconButton(
+                        // ← Ahora el icono está a la izquierda
+                        icon: Icon(
+                          _obscurePassword
+                              ? Icons.visibility_off
+                              : Icons.visibility,
+                              color: Colors.red,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _obscurePassword = !_obscurePassword;
+                          });
+                        },
+                      ),
                     ),
                   ),
                   const SizedBox(height: 30),
+
                   ElevatedButton(
                     onPressed: _login,
                     child: const Text('Ingresar'),
@@ -110,9 +130,8 @@ class _LoginPageState extends State<LoginPage> {
                       child: const Text(
                         'Regístrate',
                         style: TextStyle(
-                          color: Colors.deepPurple,
+                          color: Colors.red,
                           fontWeight: FontWeight.bold,
-                          decoration: TextDecoration.underline,
                         ),
                       ),
                     )
