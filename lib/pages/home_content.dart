@@ -51,8 +51,9 @@ class HomeContent extends StatelessWidget {
 
               // Featured Movie
               if (movies.isNotEmpty)
-                GestureDetector(
-                  onTap: () {
+                _buildFeaturedMovie(
+                  movies.first,
+                  () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -62,7 +63,6 @@ class HomeContent extends StatelessWidget {
                       ),
                     );
                   },
-                  child: _buildFeaturedMovie(movies.first),
                 ),
 
               const SizedBox(height: 30),
@@ -119,7 +119,7 @@ class HomeContent extends StatelessWidget {
     );
   }
 
-  Widget _buildFeaturedMovie(QueryDocumentSnapshot movie) {
+  Widget _buildFeaturedMovie(QueryDocumentSnapshot movie, VoidCallback onPlay) {
     final data = movie.data() as Map<String, dynamic>;
 
     return Center(
@@ -165,19 +165,10 @@ class HomeContent extends StatelessWidget {
                   foregroundColor: Colors.black,
                 ),
                 icon: const Icon(Icons.play_arrow),
-                label: const Text("Play"),
-                onPressed: () {},
+                label: const Text("Ver película"),
+                onPressed: onPlay,
               ),
               const SizedBox(width: 12),
-              ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.grey.shade800,
-                  foregroundColor: Colors.white,
-                ),
-                icon: const Icon(Icons.add),
-                label: const Text("My Playlist"),
-                onPressed: () {},
-              ),
             ],
           ),
         ],
@@ -185,3 +176,4 @@ class HomeContent extends StatelessWidget {
     );
   }
 }
+
