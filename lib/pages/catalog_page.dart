@@ -104,9 +104,9 @@ class _CatalogPageState extends State<CatalogPage> {
                     gridDelegate:
                         const SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 3,
-                      childAspectRatio: 0.65,
+                      childAspectRatio: 0.59, // ← más alto (antes 0.65)
                       crossAxisSpacing: 12,
-                      mainAxisSpacing: 16,
+                      mainAxisSpacing: 20,
                     ),
                     itemBuilder: (context, index) {
                       final movie =
