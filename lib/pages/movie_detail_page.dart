@@ -68,7 +68,7 @@ class MovieDetailPage extends StatelessWidget {
                 children: [
                   // Título
                   Text(
-                    '$title (${year})',
+                    '$title ($year)',
                     style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
@@ -79,15 +79,54 @@ class MovieDetailPage extends StatelessWidget {
 
                   // Fila de metadatos
                   Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _iconWithText(Icons.person, 'Director: $director'),
+                      Expanded(
+                        child: Row(
+                          children: [
+                            const Icon(Icons.person,
+                                size: 18, color: Colors.white60),
+                            const SizedBox(width: 6),
+                            Expanded(
+                              child: Text(
+                                'Director: $director',
+                                style: const TextStyle(color: Colors.white70),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                       const SizedBox(width: 16),
-                      _iconWithText(Icons.category, genre),
+                      Expanded(
+                        child: Row(
+                          children: [
+                            const Icon(Icons.category,
+                                size: 18, color: Colors.white60),
+                            const SizedBox(width: 6),
+                            Expanded(
+                              child: Text(
+                                genre,
+                                style: const TextStyle(color: Colors.white70),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 8),
-                  _iconWithText(Icons.star, 'Calificación: $rating / 10',
-                      iconColor: Colors.amber),
+                  Row(
+                    children: [
+                      const Icon(Icons.star, size: 18, color: Colors.amber),
+                      const SizedBox(width: 6),
+                      Text(
+                        'Calificación: $rating / 10',
+                        style: const TextStyle(color: Colors.white70),
+                      ),
+                    ],
+                  ),
 
                   const Divider(color: Colors.white24, height: 32),
 
